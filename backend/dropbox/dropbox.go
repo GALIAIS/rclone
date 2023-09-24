@@ -1727,10 +1727,10 @@ func (o *Object) uploadChunked(ctx context.Context, in0 io.Reader, commitInfo *f
 
 	err = o.fs.pacer.Call(func() (bool, error) {
 		entry, err = o.fs.srv.UploadSessionFinish(args, nil)
-		// If error is insufficient space then don't retry
+		// If error is insufficient space then end the sync like we do in shouldRetry
 		if e, ok := err.(files.UploadSessionFinishAPIError); ok {
 			if e.EndpointError != nil && e.EndpointError.Path != nil && e.EndpointError.Path.Tag == files.WriteErrorInsufficientSpace {
-				err = fserrors.NoRetryError(err)
+				err = fserrors.FatalError(err)
 				return false, err
 			}
 		}
